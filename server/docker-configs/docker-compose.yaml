@@ -1,0 +1,10 @@
+services:
+  stream-server:
+    build:
+      context: ../
+      dockerfile: docker-configs/Dockerfile
+    environment:
+      - SERVER_IP=0.0.0.0
+      - SERVER_PORT=50000
+      - MAX_CONNECTIONS=10
+      - LOG_LEVEL=DEBUG
