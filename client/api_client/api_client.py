@@ -39,7 +39,7 @@ class ApiClient:
         return self.__video_meta_datas.model_copy()
 
     def get_stream_sock_capacity(self)->int:
-        return int(self.__stream_socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)*0.5)
+        return self.__stream_socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
 
     def get_video_frame(
         self,
@@ -54,24 +54,13 @@ class ApiClient:
         response = schemes.Response.from_tcp_connection(self.__control_connection)
         if response.status == schemes.ResponseStatusEnum.BAD_REQUEST:
             raise ValueError(response.message)
-        stream_socket_capacity = self.get_stream_sock_capacity()
-        size_received = 0
         while True:
-            if size_received + MTU_SIZE > stream_socket_capacity:
-                schemes.SendStatusSchema(
-                    status=schemes.SendStatusEnum.ok_continue
-                ).send_to_tcp_connection(self.__control_connection)
-                size_received = 0
             data = self.__stream_socket.recv(MTU_SIZE)
             data = struct.unpack(f"ii{MTU_VIDEO_BYTE_SIZE}s", data)
             if data[0] == -1:
                 break
-            bisect.insort(
-                sorted_bytes,
-                data,
-                key=lambda x: x[0]
-            )
-            size_received += MTU_SIZE
+            sorted_bytes.append(data)
+        sorted_bytes.sort(key=lambda x: x[0])
         first_bytes = sorted_bytes[0]
         second_bytes = sorted_bytes[1]
         return reduce(

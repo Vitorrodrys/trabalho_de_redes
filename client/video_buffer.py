@@ -26,6 +26,7 @@ class Buffer:
         mpv_command = [
             "mpv",
             "--no-cache",
+            "--cache=no",
             "--quiet",
             "--no-terminal",
             "--input-conf=/dev/null",

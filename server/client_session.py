@@ -23,33 +23,19 @@ def send_packages(
     client_connection_data: command_schemes.StartConnectionSchema,
     frame_request: command_schemes.FrameRequestSchema,
     udp_connection: socket.socket,
-    tcp_connection: socket.socket,
     client_address: str
 ):
     for i in range(0, len(data), MTU_VIDEO_BYTE_SIZE):
-        if size_already_sended + MTU > client_connection_data.udp_buffer_size:
-            logging.debug("waiting for a confirmation command to continue sending the video packages...")
-            command = command_schemes.SendStatusSchema.from_tcp_connection(tcp_connection)
-            if command.status == command_schemes.SendStatusEnum.stop:
-                udp_connection.sendto(
-                    EOFSYMBOL,
-                    (client_address, client_connection_data.udp_client_port)
-                )
-                return -1
-            size_already_sended = 0
-            logging.debug("continuing to send the video packages...")
         serialized_datas = serialize_data(frame_request.offset+size_already_read+i, data[i:i+MTU_VIDEO_BYTE_SIZE])
         udp_connection.sendto(
             serialized_datas,
             (client_address, client_connection_data.udp_client_port)
         )
-        size_already_sended += MTU
     return size_already_sended
 def process_request(
     client_connection_data:command_schemes.StartConnectionSchema,
     frame_request: command_schemes.FrameRequestSchema,
     udp_connection: socket.socket,
-    tcp_connection: socket.socket,
     client_address:str
 ):
     logging.info("initiating the process of sending video packages...")
@@ -61,7 +47,7 @@ def process_request(
             data = video_file.read(bytes_to_send)
             size_already_sended = send_packages(
                 data, size_already_read, size_already_sended, client_connection_data,
-                frame_request, udp_connection, tcp_connection, client_address
+                frame_request, udp_connection, client_address
             )
             if size_already_sended == -1:
                 return
@@ -98,8 +84,7 @@ def handle_client_connection(
             client_connection_data=client_connection_data,
             frame_request=command,
             udp_connection=udp_socket,
-            client_address=address[0],
-            tcp_connection=connection
+            client_address=address[0]
         )
 
 def starts_a_new_connection(

@@ -1,7 +1,5 @@
 from socket import socket
 
-from enum import Enum
-
 from pydantic import BaseModel
 
 
@@ -17,9 +15,3 @@ class StartConnectionSchema(Command):
 class VideoBytesRequestSchema(Command):
     offset: int
     length: int
-
-class SendStatusEnum(str, Enum):
-    ok_continue = 'OK_CONTINUE'
-    stop = 'STOP'
-class SendStatusSchema(Command):
-    status: SendStatusEnum

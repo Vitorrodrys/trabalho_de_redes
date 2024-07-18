@@ -8,3 +8,5 @@ services:
       - SERVER_PORT=50000
       - MAX_CONNECTIONS=10
       - LOG_LEVEL=DEBUG
+    ports:
+      - "50000:50000"

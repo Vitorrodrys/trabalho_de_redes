@@ -1,4 +1,3 @@
-from enum import Enum
 import socket
 from typing import Iterator
 
@@ -29,9 +28,3 @@ class FrameRequestSchema(BaseCommand):
         yield first_quantity
         yield second_quantity
 
-
-class SendStatusEnum(str, Enum):
-    ok_continue = 'OK_CONTINUE'
-    stop = 'STOP'
-class SendStatusSchema(BaseCommand):
-    status: SendStatusEnum

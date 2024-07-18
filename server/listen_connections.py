@@ -6,6 +6,7 @@ from client_session import starts_a_new_connection
 
 def listen_new_connections():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_sock:
+        server_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         server_sock.bind((environment_settings.server_ip, environment_settings.server_port))
         server_sock.listen(environment_settings.max_connections)
 
