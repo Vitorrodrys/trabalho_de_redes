@@ -4,8 +4,6 @@ COPY . /opt/stream-server
 
 WORKDIR /opt/stream-server
 
-RUN apt-get update
-RUN apt-get install libmediainfo-dev -y
 RUN pip install -r requirements.txt
 
 

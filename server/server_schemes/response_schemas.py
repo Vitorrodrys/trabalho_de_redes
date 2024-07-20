@@ -13,7 +13,7 @@ class Response(ResponseSchema):
     status: ResponseStatusEnum
     message: str = "command executed successfully"
 
-class VideoMetadasResponse(ResponseSchema):
+class VideoMetadasResponse(Response):
     size: int
 
     @classmethod

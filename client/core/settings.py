@@ -19,14 +19,14 @@ class ServerSettings(BaseSettings):
     
 class EnvironmentSettings(BaseSettings):
     log_level: LogLevelsEnum = os.getenv('LOG_LEVEL', default="ERROR")
-    max_wait_buffer_size: int = os.getenv('MAX_WAIT_BUFFER_SIZE', default="10")
+    mpv_frames_size: int = os.getenv('MPV_FRAMES_SIZE', default="100")
 
 class NetworkSettings(BaseSettings):
-    mtu: int = os.getenv('MTU', default="1500")
+    mtu: int = os.getenv('MTU', default="1472")
 
     @computed_field
     @property
-    def mtu_video_byte_size(self):
+    def mtu_video_byte_size(self)->int:
         return self.mtu - 4 - 4
 
 server_settings = ServerSettings()

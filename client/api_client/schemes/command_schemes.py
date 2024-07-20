@@ -1,17 +1,19 @@
 from socket import socket
 
-from pydantic import BaseModel
-
-
-class Command(BaseModel):
+from .schemas import BaseRequestSchema
+class Command(BaseRequestSchema):
     def send_to_tcp_connection(self, connection:socket):
-        connection.sendall(self.model_dump_json().encode())
+        __WrapperCommand(
+            command=self
+        ).send_to_tcp_connection(connection)
+class __WrapperCommand(BaseRequestSchema):
+    command: Command
 
-class StartConnectionSchema(Command):
-    path_video: str
-    udp_client_port: int
-    udp_buffer_size: int
+class PauseCommand(Command):
+    pause: bool = True
 
-class VideoBytesRequestSchema(Command):
-    offset: int
-    length: int
+class SeekCommand(Command):
+    position: int
+
+class StopCommand(Command):
+    stop: bool = True

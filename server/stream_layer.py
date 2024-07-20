@@ -45,7 +45,7 @@ class StreamLayer:
                 self.__pause.release()
                 frame = self.__file.read(size_read_in_each_iteration)
                 self.__send_packages(
-                    self.__current_offset, 
+                    self.__current_offset,
                     frame
                 )
                 self.__current_offset += size_read_in_each_iteration

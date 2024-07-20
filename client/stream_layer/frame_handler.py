@@ -1,5 +1,5 @@
+from functools import reduce
 import struct
-from threading import Lock
 
 from core import environment_settings, network_settings
 
@@ -11,25 +11,27 @@ class FrameHandler:
         return t[0], t[2][:t[1]]
     def __init__(
         self,
-        max_wait_buffer_size: int = environment_settings.max_wait_buffer_size
+        mpv_frames_size: int = environment_settings.mpv_frames_size
     ) -> None:
-        self.__max_wait_buffer_size = max_wait_buffer_size
-        self.__wait_buffer_size: dict[int, bytes] = {}
-        self.__current_offset = 0
-        self.__lock = Lock()
+        self.__mpv_frames_size = mpv_frames_size
+        self.__frame = []
 
-    def get_next_frame(self, new_frame: bytes):
-        offset, frame_bytes = self.__deserialize_data(new_frame)
-        with self.__lock:
-            if offset == self.__current_offset:
-                self.__current_offset += len(frame_bytes)
-                return frame_bytes
-            if offset < self.__current_offset:
-                return None
-            self.__wait_buffer_size[offset] = frame_bytes
-            if len(self.__wait_buffer_size) > self.__max_wait_buffer_size:
-                offset, frame_bytes = self.__wait_buffer_size.pop(
-                    min(self.__wait_buffer_size.keys())
-                )
-                self.__current_offset = offset
-                return frame_bytes
+    def insert_new_package(self, package:bytes):
+        desirialized_datas = self.__deserialize_data(package)
+        self.__frame.append(desirialized_datas)
+
+    def get_next_frame(self) -> bytes:
+        if len(self.__frame) < self.__mpv_frames_size:
+            return None
+        self.__frame.sort(key=lambda x: x[0])
+        reduced_frame = reduce(
+            lambda x, y: (x + y[1]),
+            self.__frame[2:],
+            self.__frame[0][1] + self.__frame[1][1]
+        )
+        self.__frame = []
+        return reduced_frame
+    def seek(self):
+        self.__frame = []
+    def stop(self):
+        self.__frame = []
