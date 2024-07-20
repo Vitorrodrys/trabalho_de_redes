@@ -1,30 +1,36 @@
-import socket
-from typing import Iterator
+from abc import ABC, abstractmethod
+from typing import Union, Literal
 
-from pydantic import BaseModel
+from stream_layer import StreamLayer
 
+from .schemas import RequestSchema
 
-CHUNK_SIZE = 4096
+class StopConnection(Exception):
+    pass
 
+class BaseCommand(RequestSchema, ABC):
+    @abstractmethod
+    def execute(self, stream_layer: StreamLayer):
+        pass
 
-class BaseCommand(BaseModel):
+class PauseCommand(BaseCommand):
+    pause: Literal[True]
 
-    @classmethod
-    def from_tcp_connection(cls, connection: socket.socket):
-        return cls.model_validate_json(connection.recv(1024).decode('utf-8'))
+    def execute(self, stream_layer: StreamLayer):
+        return stream_layer.pause()
 
-class StartConnectionSchema(BaseCommand):
-    path_video: str
-    udp_client_port: int
-    udp_buffer_size: int
+class StopCommand(BaseCommand):
+    stop: Literal[True]
 
-class FrameRequestSchema(BaseCommand):
-    offset: int
-    length: int
+    def execute(self, stream_layer: StreamLayer):
+        stream_layer.stop()
+        raise StopConnection()
 
-    def reader_iterator(self) -> Iterator[int]:
-        first_quantity = CHUNK_SIZE * int(self.length/CHUNK_SIZE)
-        second_quantity = self.length - first_quantity
-        yield first_quantity
-        yield second_quantity
+class SeekCommand(BaseCommand):
+    seek: int
 
+    def execute(self, stream_layer: StreamLayer):
+        return stream_layer.seek(self.seek)
+
+class SomeCommand(RequestSchema):
+    command: Union[PauseCommand, StopCommand, SeekCommand]

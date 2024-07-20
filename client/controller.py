@@ -1,7 +1,7 @@
 from threading import Thread, Lock
 
 from api_client import ApiClient
-from settings import environment_settings
+from client.core.settings import environment_settings
 from video_buffer import Buffer
 
 
