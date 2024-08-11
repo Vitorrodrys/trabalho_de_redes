@@ -1,5 +1,9 @@
 from core import init_logging
-from listen_connections import listen_new_connections
-
+from session_handler.listen_connections import listen_connections
 init_logging()
-listen_new_connections()
+
+def main():
+    listen_connections()
+
+if __name__ == '__main__':
+    main()

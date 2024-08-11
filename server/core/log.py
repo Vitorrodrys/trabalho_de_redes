@@ -1,11 +1,11 @@
 import logging
 
-from .settings import environment_settings
+from .settings import server_settings
 
 
 def init_logging():
     warnings = []
-    levelstr = environment_settings.log_level
+    levelstr = server_settings.log_level
     levelobj = logging.getLevelName(levelstr)
 
     logger = logging.getLogger()
