@@ -34,11 +34,17 @@ class APISession:
     def seek_video(self, offset: int):
         if not self.__stream_layer.update_offset(offset):
             self.__tcp_channel.write_data("invalid seek position")
+        self.__tcp_channel.write_data("ok")
 
     @commands_registry.add("stop")
     def stop(self):
         self.__stream_layer.stop()
+        self.__tcp_channel.write_data("ok")
         raise StopSession()
+
+    @commands_registry.add("pause")
+    def pause(self):
+        self.__stream_layer.pause()
 
     def wait_comands(self):
         while True:
