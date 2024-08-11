@@ -1,8 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 import os
 
 from pydantic_settings import BaseSettings
-class LogLevelsEnum(str, Enum):
+
+class LogLevelsEnum(StrEnum):
     critical = "CRITICAL"
     fatal = "FATAL"
     error = "ERROR"
@@ -23,7 +24,6 @@ class SessionSettings(BaseSettings):
     default_starts_window_size: int = os.getenv('DEFAULT_STARTS_WINDOW_SIZE')
     threshold_window_size: int = os.getenv('THRESHOLD_WINDOW_SIZE')
     window_size_increment: int = os.getenv("WINDOW_SIZE_INCREMENT")
-    default_timeout: float = os.getenv('DEFAULT_TIMEOUT')
     max_requests: int = os.getenv('MAX_REQUESTS')
     requests_pulling_interval: float = os.getenv('REQUESTS_PULLING_INTERVAL')
     network_mtu: int = os.getenv('NETWORK_MTU')

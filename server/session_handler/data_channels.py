@@ -31,15 +31,11 @@ class TCPChannel(BaseChannel):
         ip_listen:str,
         port: int,
         *,
-        max_connections: typing.Optional[int] = server_settings.max_connections,
-        default_timeout: typing.Optional[float] = session_settings.default_timeout
+        max_connections: typing.Optional[int] = server_settings.max_connections
     )->socket.socket:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind((ip_listen, port))
         server_socket.listen(max_connections)
-        if not default_timeout:
-            raise ValueError("Invalid timeout value")
-        server_socket.settimeout(default_timeout)
         return server_socket
 
     def read_datas(self)->tuple[str]:
