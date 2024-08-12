@@ -1,20 +1,25 @@
+import logging
+
 from core import session_settings
-
-
 
 class WindowHandler:
 
-    def __init__(self) -> None:
-        self.__current_window_size = session_settings.default_starts_window_size
+    def __init__(
+        self
+    ) -> None:
+        self.__current_window_size = int(session_settings.superior_threshould*0.05)
         self.__lower_threshold = None
+        self.__superior_threshould = session_settings.superior_threshould
 
     def __duplicate_window_size(self):
-        if self.__current_window_size*2 < session_settings.threshold_window_size:
+        if self.__current_window_size*2 < self.__superior_threshould:
             self.__current_window_size*=2
+        else:
+            logging.info("threshould window size %d arrived", self.__superior_threshould)
 
     def __increment_slowly(self):
         new_window_size = self.__current_window_size + session_settings.window_size_increment
-        if new_window_size < session_settings.threshold_window_size:
+        if new_window_size < self.__superior_threshould:
             self.__current_window_size = new_window_size
 
     def __increment_window(self):
@@ -23,10 +28,13 @@ class WindowHandler:
         else:
             self.__duplicate_window_size()
 
-    def update_window_size(self, received_packages: int):
-        if received_packages/self.__current_window_size == 1:
+    def update_window_size(self, byte_count: int):
+        if byte_count/self.__current_window_size == 1:
             self.__increment_window()
+            logging.info("increasing window size to %d", self.__current_window_size)
+            
             return
+        logging.info("was detect losed packages, decreasing window size")
         self.__lower_threshold = self.__current_window_size/2
 
 

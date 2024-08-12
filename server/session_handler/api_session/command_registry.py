@@ -11,8 +11,6 @@ class CommandRegistry:
         Provides a decorator to register a function with a command name.
         """
         def decorator(func:Callable):
-            # Registry the function with the command name
-            self.command_map[command_name] = func
 
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -29,7 +27,7 @@ class CommandRegistry:
                                 raise TypeError(f"Failed to convert parameter '{name}' to {param.annotation}") from e
 
                 return func(*bound_values.values())
-
+            self.command_map[command_name] = wrapper
             return wrapper
 
         return decorator

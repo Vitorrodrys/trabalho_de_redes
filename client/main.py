@@ -2,4 +2,10 @@ from core import init_logging
 from user_cli import interactive_cli
 
 init_logging()
-interactive_cli()
+
+def main():
+    interactive_cli()
+
+
+if __name__ == '__main__':
+    main()

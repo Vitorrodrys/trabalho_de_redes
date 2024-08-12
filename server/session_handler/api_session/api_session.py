@@ -1,4 +1,4 @@
-from data_channels import TCPChannel
+from session_handler.data_channels import TCPChannel
 
 from .command_registry import CommandRegistry
 from .stream_layer import RequestFrame, StreamLayer
@@ -27,8 +27,8 @@ class APISession:
         self.__stream_layer.add_request(RequestFrame(package_size))
 
     @commands_registry.add("feedback")
-    def receive_client_feedback(self, received_packages: int):
-        self.__window_handler.update_window_size(received_packages)
+    def receive_client_feedback(self, byte_count: int):
+        self.__window_handler.update_window_size(byte_count)
 
     @commands_registry.add("seek")
     def seek_video(self, offset: int):
@@ -46,14 +46,18 @@ class APISession:
     def pause(self):
         self.__stream_layer.pause()
 
+    def __run_command(self, command: tuple[str]):
+        command_name, *args = command
+        command_func = commands_registry.get_command(command_name)
+        if not command_func:
+            self.__tcp_channel.write_data(f"command {command_name} doesn't found")
+            return
+        command_func(self, *args)
     def wait_comands(self):
         while True:
             try:
-                command_name, *args = self.__tcp_channel.read_datas()
-                command_func = commands_registry.get_command(command_name)
-                if not command_func:
-                    self.__tcp_channel.write_data(f"command {command_name} doesn't found")
-                    continue
-                command_func(*args)
+                commands = self.__tcp_channel.read_datas()
+                for command in commands:
+                    self.__run_command(command)
             except StopSession:
                 return

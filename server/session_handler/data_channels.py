@@ -1,8 +1,12 @@
+from functools import reduce
 import socket
 import struct
 import typing
 
 from core import server_settings, session_settings
+
+
+EOF = b"#END#"
 
 IP_HEADER_SIZE = 20
 UDP_HEADER_SIZE = 8
@@ -38,13 +42,20 @@ class TCPChannel(BaseChannel):
         server_socket.listen(max_connections)
         return server_socket
 
-    def read_datas(self)->tuple[str]:
-        return tuple(
-            self._sock.recv(
-                1024
-            ).decode('utf-8').split(' ')
-        )
-
+    def read_datas(self)->list[tuple[str]]:
+        
+        def iterator(datas:list[str]):
+            current_tuple = tuple()
+            for data in datas:
+                if data == EOF.decode('utf-8'):
+                    yield current_tuple
+                    current_tuple = tuple()
+                    continue
+                current_tuple += (data,)
+        datas = self._sock.recv(
+            1024
+        ).decode('utf-8').split(' ')
+        return list(iterator(datas))
     def write_data(self, data: str)->None:
         self._sock.send(
             data.encode('utf-8')
@@ -66,7 +77,7 @@ class UDPChannel(BaseChannel):
     @classmethod
     def __serialize_bytes(cls, video_package: bytes, offset: int)->bytes:
         return struct.pack(
-            f"!II{VIDEO_BYTES_SIZE}s",
+            f"ii{VIDEO_BYTES_SIZE}s",
             offset,
             len(video_package),
             video_package
@@ -79,9 +90,11 @@ class UDPChannel(BaseChannel):
                 package,
                 (self.__client_address, self.__client_port)
             )
-        self._sock.sendto(
-            self.__serialize_bytes(
-                bytes("-1"),
+        eof_package = self.__serialize_bytes(
+                b'-1',
                 -1
             )
+        self._sock.sendto(
+            eof_package,
+            (self.__client_address, self.__client_port)
         )
