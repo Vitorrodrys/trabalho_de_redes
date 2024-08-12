@@ -10,7 +10,6 @@ services:
       - WINDOW_SIZE_INCREMENT=2000
       - LOG_LEVEL=DEBUG
       - MAX_REQUESTS=10
-      - REQUESTS_PULLING_INTERVAL=0.5
       - NETWORK_MTU=1500
     ports:
       - "50000:50000"
