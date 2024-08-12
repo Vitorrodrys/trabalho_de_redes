@@ -23,7 +23,6 @@ class SessionSettings(BaseSettings):
     # Session settings
     window_size_increment: int = os.getenv("WINDOW_SIZE_INCREMENT")
     max_requests: int = os.getenv('MAX_REQUESTS')
-    requests_pulling_interval: float = os.getenv('REQUESTS_PULLING_INTERVAL')
     network_mtu: int = os.getenv('NETWORK_MTU')
     superior_threshould: int = os.getenv("SUPERIOR_THRESHOULD", default=str(2**17))
 
