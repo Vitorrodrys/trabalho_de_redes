@@ -1,4 +1,3 @@
-from functools import reduce
 import socket
 import struct
 import typing

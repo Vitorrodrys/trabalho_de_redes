@@ -11,5 +11,6 @@ services:
       - LOG_LEVEL=DEBUG
       - MAX_REQUESTS=10
       - NETWORK_MTU=1500
+      - LOG_LEVEL=CRITICAL
     ports:
       - "50000:50000"
