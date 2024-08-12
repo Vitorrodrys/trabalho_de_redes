@@ -25,7 +25,7 @@ class SessionSettings(BaseSettings):
     max_requests: int = os.getenv('MAX_REQUESTS')
     requests_pulling_interval: float = os.getenv('REQUESTS_PULLING_INTERVAL')
     network_mtu: int = os.getenv('NETWORK_MTU')
-    superior_threshould: int = os.getenv("SUPERIOR_THRESHOULD", default=str(2**15))
+    superior_threshould: int = os.getenv("SUPERIOR_THRESHOULD", default=str(2**17))
 
 server_settings = ServerSettings()
 session_settings = SessionSettings()
