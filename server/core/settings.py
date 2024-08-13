@@ -21,7 +21,7 @@ class ServerSettings(BaseSettings):
 
 class SessionSettings(BaseSettings):
     # Session settings
-    window_size_increment: int = os.getenv("WINDOW_SIZE_INCREMENT")
+    cluster_size: int = os.getenv('CLUSTER_SIZE', default=str(4096))
     max_requests: int = os.getenv('MAX_REQUESTS')
     network_mtu: int = os.getenv('NETWORK_MTU')
     superior_threshould: int = os.getenv("SUPERIOR_THRESHOULD", default=str(2**21))

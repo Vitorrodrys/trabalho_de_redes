@@ -14,7 +14,7 @@ def starts_user_session()->tuple[UserAPI, StreamLayer, int]:
     return user_api, stream_layer, video_size
 
 def interactive_seek(user_api: UserAPI, video_size: int):
-    percentage_video = float(input("percentage video to seek: "))
+    percentage_video = float(input("percentage video to seek: "))/100
     offset = int(video_size * percentage_video)
     user_api.seek(offset)
 

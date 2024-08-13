@@ -31,8 +31,7 @@ class TCPChannel(BaseChannel):
     def create_tcp_channel(
         cls,
         video_path: str,
-        udp_port: int,
-        udp_buffer_size: int
+        udp_port: int
     )->tuple["TCPChannel", int]:
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_sock.connect(
@@ -40,7 +39,7 @@ class TCPChannel(BaseChannel):
         )
         tcp_channel = cls(tcp_sock)
         tcp_channel.__write_data(f"{udp_port} {video_path}")
-        return tcp_channel, int(tcp_channel.read_datas()[0])
+        return tcp_channel, int(tcp_channel.read_datas())
 
     def read_datas(self)->str:
         return self._sock.recv(
@@ -74,9 +73,6 @@ class UDPChannel(BaseChannel):
 
     def get_listening_udp_port(self)->int:
         return self._sock.getsockname()[1]
-
-    def get_receipt_buffer_size(self)->int:
-        return self._sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
 
     def __deserialize(self, package: bytes)->tuple[int, bytes]:
         offset, data_length, datas = struct.unpack(f"ii{VIDEO_BYTES_SIZE}s", package)
