@@ -82,13 +82,13 @@ class UDPChannel(BaseChannel):
         frame = []
         while True:
             try:
-                logging.info("receiving a new package from UDP channel")
                 package = self._sock.recv(PACKAGE_MTU)
                 offset, data = self.__deserialize(package)
                 if offset == -1:
                     break
                 frame.append((offset, data))
             except socket.timeout:
+                logging.debug("a timeout ocurred while wait receive a strem package")
                 break
         frame.sort(
             key=lambda x: x[0]
