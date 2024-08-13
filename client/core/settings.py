@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 import os
 
-from pydantic import computed_field
 from pydantic_settings import BaseSettings
 
-class LogLevelsEnum(str, Enum):
+
+class LogLevelsEnum(StrEnum):
     critical = "CRITICAL"
     fatal = "FATAL"
     error = "ERROR"
@@ -13,22 +13,14 @@ class LogLevelsEnum(str, Enum):
     info = "INFO"
     debug = "DEBUG"
 
-class ServerSettings(BaseSettings):
-    server_address: str = os.getenv('SERVER_ADDRESS')
-    server_port: int = os.getenv('SERVER_PORT')
-    
 class EnvironmentSettings(BaseSettings):
-    log_level: LogLevelsEnum = os.getenv('LOG_LEVEL', default="ERROR")
-    mpv_frames_size: int = os.getenv('MPV_FRAMES_SIZE', default="100")
+    log_level: str = os.getenv("LOG_LEVEL", default="INFO")
+    server_ip: str = os.getenv("SERVER_IP")
+    server_port: int = os.getenv("SERVER_PORT")
 
-class NetworkSettings(BaseSettings):
-    mtu: int = os.getenv('MTU', default="1472")
-
-    @computed_field
-    @property
-    def mtu_video_byte_size(self)->int:
-        return self.mtu - 4 - 4
-
-server_settings = ServerSettings()
-environment_settings = EnvironmentSettings()
-network_settings = NetworkSettings()
+class SessionSettings(BaseSettings):
+    udp_channel_timeout: float = os.getenv("UDP_CHANNEL_TIMEOUT", default="2")
+    network_mtu: int = os.getenv("NETWORK_MTU", default="1500")
+    
+session_settings = SessionSettings()
+enviroment_settings = EnvironmentSettings()

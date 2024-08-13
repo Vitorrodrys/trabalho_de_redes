@@ -1,11 +1,21 @@
+from enum import StrEnum
 import logging
 
-from .settings import environment_settings
+from .settings import enviroment_settings
+
+class LogLevelsEnum(StrEnum):
+    critical = "CRITICAL"
+    fatal = "FATAL"
+    error = "ERROR"
+    warn = "WARN"
+    warning = "WARNING"
+    info = "INFO"
+    debug = "DEBUG"
 
 
 def init_logging():
     warnings = []
-    levelstr = environment_settings.log_level
+    levelstr = enviroment_settings.log_level
     levelobj = logging.getLevelName(levelstr)
 
     logger = logging.getLogger()
