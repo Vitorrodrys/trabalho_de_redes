@@ -19,16 +19,12 @@ class WindowHandler:
 
     def __duplicate_until_threshould(self):
         if self.__current_window_size*2 > self.__threshould:
-            self.__current_state = 3
-            self.__increment_slowly()
             return
         self.__current_window_size = self.__current_window_size*2
 
     def __increment_slowly(self):
         new_window_size = self.__current_window_size + session_settings.cluster_size
         if new_window_size >= self.__threshould:
-            self.__current_state = 4
-            self.__keep_current_window_size()
             return
         self.__current_window_size = new_window_size
 
@@ -37,6 +33,9 @@ class WindowHandler:
 
     #conditional transitions
     def __state_zero_transitions(self, losses_ocurred:bool):
+        if self.__current_window_size*2 >= self.__threshould:
+            self.__current_state = 3
+            return
         self.__current_state = 1 if losses_ocurred else 0
 
     def __state_one_transitions(self, losses_ocurred:bool):
@@ -66,6 +65,7 @@ class WindowHandler:
             return
         self.__current_state = 0
         self.__threshould = session_settings.upper_threshould
+        self.__current_window_size = STARTS_DEFAULT_SIZE
 
     def __init__(
         self

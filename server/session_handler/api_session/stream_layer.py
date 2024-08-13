@@ -10,7 +10,6 @@ from session_handler.data_channels import UDPChannel
 class RequestFrame:
     size: int
 
-
 class __WorkerStreamLayer:
 
     def __process_request(self, request_frame: RequestFrame):
@@ -39,6 +38,7 @@ class __WorkerStreamLayer:
     ) -> None:
         self._udp_channel = udp_channel
         self._video_path = video_path
+        self._file_size = os.path.getsize(video_path)
         self._requests_queue: Queue[RequestFrame] = Queue(session_settings.max_requests)
         self._current_offset = 0
         self._lock = Lock()
@@ -54,7 +54,7 @@ class StreamLayer(__WorkerStreamLayer):
         self._requests_queue.put(request_frame, block=True)
 
     def update_offset(self, offset: int)->bool:
-        if offset >= os.path.getsize(self._video_path):
+        if offset >= self._file_size:
             return False
         with self._lock:
             self._current_offset = offset
