@@ -23,6 +23,7 @@ def create_session(tcp_channel: TCPChannel, client_address:str):
     udp_channel = UDPChannel(client_address, int(udp_port))
     tcp_channel.write_data(str(os.path.getsize(video_path)))
     starts_session(tcp_channel, udp_channel, video_path)
+    logging.info("Session with client %s was closed", client_address)
 
 def listen_connections():
 
