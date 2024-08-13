@@ -13,11 +13,16 @@ class RequestFrame:
 class __WorkerStreamLayer:
 
     def __process_request(self, request_frame: RequestFrame):
-        with open(self._video_path, 'rb') as video_file:
-            video_file.seek(self._current_offset)
-            data = video_file.read(request_frame.size)
+        """
+        process a single request of stream bytes from client
+        
+        args:
+            request_frame: RequestFrame -> a frame received from queue to be processed
+        """
+        with self._lock:
+            data = self._video_file.read(request_frame.size)
             self._udp_channel.send_data(data)
-            self._current_offset += request_frame.size
+
     def __handler_video(self):
         while True:
             with self._pause_lock:
@@ -28,8 +33,7 @@ class __WorkerStreamLayer:
                 request_frame = self._requests_queue.get(block=False)
             except Empty:
                 continue
-            with self._lock:
-                self.__process_request(request_frame)
+            self.__process_request(request_frame)
 
     def __init__(
         self,
@@ -38,9 +42,9 @@ class __WorkerStreamLayer:
     ) -> None:
         self._udp_channel = udp_channel
         self._video_path = video_path
+        self._video_file = open(video_path, 'rb')
         self._file_size = os.path.getsize(video_path)
         self._requests_queue: Queue[RequestFrame] = Queue(session_settings.max_requests)
-        self._current_offset = 0
         self._lock = Lock()
         self._pause_lock = Lock()
         self._kill_event = Event()
@@ -57,7 +61,7 @@ class StreamLayer(__WorkerStreamLayer):
         if offset >= self._file_size:
             return False
         with self._lock:
-            self._current_offset = offset
+            self._video_file.seek(offset)
             return True
     def pause(self):
         if self._pause_lock.locked():
@@ -66,6 +70,11 @@ class StreamLayer(__WorkerStreamLayer):
         self._pause_lock.acquire()
 
     def stop(self):
+        with self._lock:
+            self._video_file.close()
         self._kill_event.set()
         self._worker_thread.join()
         self._udp_channel.close()
+
+    def __del__(self):
+        self.stop()
