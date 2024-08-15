@@ -14,11 +14,12 @@ class APISession:
 
     def __init__(
         self,
+        video_path: str,
         tcp_channel: TCPChannel,
         stream_layer: StreamLayer
     ) -> None:
         self.__tcp_channel = tcp_channel
-        self.__window_handler = WindowHandler()
+        self.__window_handler = WindowHandler(video_path)
         self.__stream_layer = stream_layer
 
     @commands_registry.add("get_video_frame")

@@ -1,13 +1,33 @@
+import json
 import logging
+import os
+
+import ffmpeg
 
 from core import session_settings
 
-# Ensure the window size is a multiple of the OS cluster size to avoid reading
-# unnecessary disk blocks and maximize data usage efficiency.
-STARTS_DEFAULT_SIZE = int(session_settings.upper_threshould*0.05)
-STARTS_DEFAULT_SIZE -= STARTS_DEFAULT_SIZE%session_settings.cluster_size
-
 class WindowHandler:
+
+    def __get_video_byterate(self, video_path: str) -> float:
+        file_size = os.path.getsize(video_path)
+        probe = ffmpeg.probe(video_path)
+        probe_format = probe['format']
+
+        if 'duration' in probe_format:
+            duration = float(probe_format['duration'])
+        else:
+            logging.error("Unable to get video duration with ffmpeg.")
+            logging.error(
+                "Here is the dictionary returned by ffmpeg.probe:\n%s", 
+                json.dumps(
+                    probe,
+                    indent=4
+                )
+            )
+            raise ValueError("Unable to get video duration with ffmpeg.")
+        byterate = file_size / duration
+        logging.info("Byte rate calculated successfully: %f bytes per second", byterate)
+        return byterate
 
     # State actions
     def __duplicate_window_size(self):
@@ -15,7 +35,8 @@ class WindowHandler:
 
     def __starts_to_begging(self):
         self.__threshould = self.__current_window_size/2
-        self.__current_window_size = STARTS_DEFAULT_SIZE
+        self.__current_window_size = int(self.__video_byterate*0.05)
+        self.__current_window_size -= self.__current_window_size%session_settings.cluster_size
 
     def __duplicate_until_threshould(self):
         if self.__current_window_size*2 > self.__threshould:
@@ -64,14 +85,21 @@ class WindowHandler:
             self.__current_state = 4
             return
         self.__current_state = 0
-        self.__threshould = session_settings.upper_threshould
-        self.__current_window_size = STARTS_DEFAULT_SIZE
+        self.__threshould = self.__video_byterate
+        self.__current_window_size = int(self.__video_byterate*0.05)
+        self.__current_window_size -= self.__current_window_size%session_settings.cluster_size
 
     def __init__(
-        self
+        self,
+        video_path: str
     ) -> None:
-        self.__current_window_size = STARTS_DEFAULT_SIZE
-        self.__threshould = session_settings.upper_threshould
+        # Ensure the window size is a multiple of the OS cluster size
+        # to avoid reading unnecessary disk blocks and maximize data usage efficiency.
+        video_byterate = self.__get_video_byterate(video_path)
+        self.__video_byterate = video_byterate
+        self.__current_window_size = int(video_byterate*0.05)
+        self.__current_window_size -= self.__current_window_size%session_settings.cluster_size
+        self.__threshould = video_byterate
         self.__current_state = 0
         self.__states_actions_map = [
             self.__duplicate_window_size,

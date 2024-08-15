@@ -10,7 +10,7 @@ def starts_session(
     video_path: str
 ):
     stream_layer = StreamLayer(udp_channel, video_path)
-    api_session = APISession(tcp_channel, stream_layer)
+    api_session = APISession(video_path, tcp_channel, stream_layer)
     api_session.wait_comands()
     return
     

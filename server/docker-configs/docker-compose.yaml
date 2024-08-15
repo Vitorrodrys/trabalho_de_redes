@@ -6,11 +6,7 @@ services:
     environment:
       - SERVER_IP=0.0.0.0
       - SERVER_PORT=50000
-      - MAX_CONNECTIONS=10
-      - WINDOW_SIZE_INCREMENT=2000
-      - LOG_LEVEL=DEBUG
-      - MAX_REQUESTS=10
       - NETWORK_MTU=1500
-      - LOG_LEVEL=CRITICAL
+      - LOG_LEVEL=INFO
     ports:
       - "50000:50000"
