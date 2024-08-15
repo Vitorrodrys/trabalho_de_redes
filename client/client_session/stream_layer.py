@@ -7,7 +7,6 @@ from .client_api import StreamAPI
 
 
 class StreamLayer:
-
     @classmethod
     def create_mpv_pipe(cls):
         mpv_command = [
@@ -17,12 +16,10 @@ class StreamLayer:
             "--quiet",
             "--no-terminal",
             "--input-conf=/dev/null",
-            "-"
+            "-",
         ]
-        return subprocess.Popen(
-            mpv_command,
-            stdin=subprocess.PIPE
-        )
+        return subprocess.Popen(mpv_command, stdin=subprocess.PIPE)
+
     def __worker_method(self):
         mpv_pipe = self.create_mpv_pipe()
         while self.__kill_event.is_set() is False:
@@ -33,12 +30,9 @@ class StreamLayer:
                 video_package = self.__udp_channel.receive_frame()
                 self.__stream_api.send_feedback(len(video_package))
                 mpv_pipe.stdin.write(video_package)
-            #mpv_pipe.stdin.flush()
-    def __init__(
-        self,
-        stream_api: StreamAPI,
-        udp_channel: UDPChannel
-    ) -> None:
+            # mpv_pipe.stdin.flush()
+
+    def __init__(self, stream_api: StreamAPI, udp_channel: UDPChannel) -> None:
         self.__stream_api = stream_api
         self.__udp_channel = udp_channel
         self.__worker_thread = Thread(target=self.__worker_method)
@@ -59,7 +53,7 @@ class StreamLayer:
             self.__pause.release()
             return
         self.__pause.acquire()
-    
+
     def stop(self):
         self.__kill_event.set()
         self.__worker_thread.join()

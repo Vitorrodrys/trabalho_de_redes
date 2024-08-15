@@ -3,6 +3,7 @@ import logging
 
 from .settings import enviroment_settings
 
+
 class LogLevelsEnum(StrEnum):
     critical = "CRITICAL"
     fatal = "FATAL"
@@ -21,8 +22,6 @@ def init_logging():
     logger = logging.getLogger()
     logger.setLevel(levelobj)
 
-    logging.log(
-        levelobj, "Logging with loglevel %s (%d)", levelstr, levelobj
-    )
+    logging.log(levelobj, "Logging with loglevel %s (%d)", levelstr, levelobj)
     for msg in warnings:
         logging.warning(msg)

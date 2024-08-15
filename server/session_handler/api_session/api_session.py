@@ -7,16 +7,14 @@ from .window_handler import WindowHandler
 
 commands_registry = CommandRegistry()
 
+
 class StopSession(Exception):
     pass
 
-class APISession:
 
+class APISession:
     def __init__(
-        self,
-        video_path: str,
-        tcp_channel: TCPChannel,
-        stream_layer: StreamLayer
+        self, video_path: str, tcp_channel: TCPChannel, stream_layer: StreamLayer
     ) -> None:
         self.__tcp_channel = tcp_channel
         self.__window_handler = WindowHandler(video_path)
@@ -54,6 +52,7 @@ class APISession:
             self.__tcp_channel.write_data(f"command {command_name} doesn't found")
             return
         command_func(self, *args)
+
     def wait_comands(self):
         while True:
             try:

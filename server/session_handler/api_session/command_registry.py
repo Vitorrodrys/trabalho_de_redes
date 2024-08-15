@@ -2,6 +2,7 @@ from inspect import signature
 from functools import wraps
 from typing import Callable, Optional
 
+
 class CommandRegistry:
     def __init__(self):
         self.command_map: dict[str, Callable] = {}
@@ -10,8 +11,8 @@ class CommandRegistry:
         """
         Provides a decorator to register a function with a command name.
         """
-        def decorator(func: Callable):
 
+        def decorator(func: Callable):
             if command_name in self.command_map:
                 raise ValueError(f"Command '{command_name}' is already registered.")
 
@@ -27,9 +28,12 @@ class CommandRegistry:
                             try:
                                 bound_values[name] = param.annotation(value)
                             except (ValueError, TypeError) as e:
-                                raise TypeError(f"Failed to convert parameter '{name}' to {param.annotation}: {value}") from e
+                                raise TypeError(
+                                    f"Failed to convert parameter '{name}' to {param.annotation}: {value}"
+                                ) from e
 
                 return func(*bound_values.values())
+
             self.command_map[command_name] = wrapper
             return wrapper
 

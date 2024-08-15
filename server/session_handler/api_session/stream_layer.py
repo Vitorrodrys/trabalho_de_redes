@@ -6,16 +6,17 @@ from threading import Event, Lock, Thread
 from core import session_settings
 from session_handler.data_channels import UDPChannel
 
+
 @dataclass(frozen=True)
 class RequestFrame:
     size: int
 
-class __WorkerStreamLayer:
 
+class __WorkerStreamLayer:
     def __process_request(self, request_frame: RequestFrame):
         """
         process a single request of stream bytes from client
-        
+
         args:
             request_frame: RequestFrame -> a frame received from queue to be processed
         """
@@ -35,14 +36,10 @@ class __WorkerStreamLayer:
                 continue
             self.__process_request(request_frame)
 
-    def __init__(
-        self,
-        udp_channel: UDPChannel,
-        video_path: str
-    ) -> None:
+    def __init__(self, udp_channel: UDPChannel, video_path: str) -> None:
         self._udp_channel = udp_channel
         self._video_path = video_path
-        self._video_file = open(video_path, 'rb')
+        self._video_file = open(video_path, "rb")
         self._file_size = os.path.getsize(video_path)
         self._requests_queue: Queue[RequestFrame] = Queue(session_settings.max_requests)
         self._lock = Lock()
@@ -53,16 +50,16 @@ class __WorkerStreamLayer:
 
 
 class StreamLayer(__WorkerStreamLayer):
-
     def add_request(self, request_frame: RequestFrame):
         self._requests_queue.put(request_frame, block=True)
 
-    def update_offset(self, offset: int)->bool:
+    def update_offset(self, offset: int) -> bool:
         if offset >= self._file_size:
             return False
         with self._lock:
             self._video_file.seek(offset)
             return True
+
     def pause(self):
         if self._pause_lock.locked():
             self._pause_lock.release()
