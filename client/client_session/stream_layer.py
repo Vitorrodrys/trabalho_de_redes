@@ -12,7 +12,7 @@ class StreamLayer:
         mpv_command = [
             "mpv",
             "--no-cache",
-            "--cache=no",
+            "--demuxer-thread=no",
             "--quiet",
             "--no-terminal",
             "--input-conf=/dev/null",
