@@ -35,11 +35,11 @@ class StreamLayer:
     def __init__(self, stream_api: StreamAPI, udp_channel: UDPChannel) -> None:
         self.__stream_api = stream_api
         self.__udp_channel = udp_channel
-        self.__worker_thread = Thread(target=self.__worker_method)
-        self.__worker_thread.start()
         self.__kill_event = Event()
         self.__lock = Lock()
         self.__pause = Lock()
+        self.__worker_thread = Thread(target=self.__worker_method)
+        self.__worker_thread.start()
 
     def get_lock(self):
         """
