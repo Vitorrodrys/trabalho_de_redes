@@ -7,6 +7,13 @@ import ffmpeg
 from core import session_settings
 
 
+FIRST_STATE = 0
+SECOND_STATE = 1
+THIRD_STATE = 2
+FOURTH_STATE = 3
+FIFTH_STATE = 4
+SIXTH_STATE = 5
+
 class WindowHandler:
     def __get_video_byterate(self, video_path: str) -> float:
         file_size = os.path.getsize(video_path)
@@ -32,10 +39,7 @@ class WindowHandler:
 
     def __starts_to_begging(self):
         self.__threshould = self.__current_window_size / 2
-        self.__current_window_size = int(self.__video_byterate * 0.05)
-        self.__current_window_size -= (
-            self.__current_window_size % session_settings.cluster_size
-        )
+        self.__current_window_size = self.__initial_window_size()
 
     def __duplicate_until_threshould(self):
         if self.__current_window_size * 2 > self.__threshould:
@@ -51,57 +55,60 @@ class WindowHandler:
     def __keep_current_window_size(self):
         logging.info("keeping the current window size")
 
+    def __split_window_size(self):
+        self.__current_window_size = self.__current_window_size / 2
+
     # conditional transitions
-    def __state_zero_transitions(self, losses_ocurred: bool):
+    def __first_state_transitions(self, losses_ocurred: bool):
         if self.__current_window_size * 2 >= self.__threshould:
-            self.__current_state = 3
+            self.__current_state = FOURTH_STATE
             return
         self.__current_state = 1 if losses_ocurred else 0
 
-    def __state_one_transitions(self, losses_ocurred: bool):
-        self.__current_state = 1 if losses_ocurred else 2
+    def __second_state_transitions(self, losses_ocurred: bool):
+        self.__current_state = SECOND_STATE if losses_ocurred else THIRD_STATE
 
-    def __state_two_transitions(self, losses_ocurred: bool):
+    def __third_state_transitions(self, losses_ocurred: bool):
         if losses_ocurred:
-            self.__current_state = 1
+            self.__current_state = SECOND_STATE
             return
         if self.__current_window_size * 2 >= self.__threshould:
-            self.__current_state = 3
+            self.__current_state = FOURTH_STATE
             return
-        self.__current_state = 2
+        self.__current_state = THIRD_STATE
 
-    def __state_three_transitions(self, losses_ocurred: bool):
+    def __fourth_state_transitions(self, losses_ocurred: bool):
         if losses_ocurred:
-            self.__current_state = 1
+            self.__current_state = SECOND_STATE
             return
         if (
             self.__current_window_size + session_settings.cluster_size
             >= self.__threshould
         ):
-            self.__current_state = 4
+            self.__current_state = FIRST_STATE
             return
-        self.__current_state = 3
+        self.__current_state = FOURTH_STATE
 
-    def __state_four_transitions(self, losses_ocurred: bool):
+    def __fifth_state_transitions(self, losses_ocurred: bool):
         if not losses_ocurred:
-            self.__current_state = 4
+            self.__current_state = FOURTH_STATE
             return
-        self.__current_state = 0
+        self.__current_state = SIXTH_STATE
+
+    def __sixth_state_transitions(self, losses_ocurred: bool):
+        if not losses_ocurred:
+            self.__current_state = FOURTH_STATE
+            return
+        self.__current_state = SECOND_STATE
+        self.__current_window_size = self.__initial_window_size()
         self.__threshould = self.__video_byterate
-        self.__current_window_size = int(self.__video_byterate * 0.05)
-        self.__current_window_size -= (
-            self.__current_window_size % session_settings.cluster_size
-        )
 
     def __init__(self, video_path: str) -> None:
         # Ensure the window size is a multiple of the OS cluster size
         # to avoid reading unnecessary disk blocks and maximize data usage efficiency.
         video_byterate = self.__get_video_byterate(video_path)
         self.__video_byterate = video_byterate
-        self.__current_window_size = int(video_byterate * 0.05)
-        self.__current_window_size -= (
-            self.__current_window_size % session_settings.cluster_size
-        )
+        self.__current_window_size = self.__initial_window_size()
         self.__threshould = video_byterate
         self.__current_state = 0
         self.__states_actions_map = [
@@ -112,12 +119,22 @@ class WindowHandler:
             self.__keep_current_window_size,
         ]
         self.__state_transitions_map = [
-            self.__state_zero_transitions,
-            self.__state_one_transitions,
-            self.__state_two_transitions,
-            self.__state_three_transitions,
-            self.__state_four_transitions,
+            self.__first_state_transitions,
+            self.__second_state_transitions,
+            self.__third_state_transitions,
+            self.__fourth_state_transitions,
+            self.__fifth_state_transitions,
+            self.__sixth_state_transitions,
+            self.__split_window_size
         ]
+
+    def __initial_window_size(self)->int:
+        """
+        Ensure the window size is a multiple of the OS cluster size.
+        This avoids reading unnecessary disk blocks and maximize data usage efficiency.
+        """
+        window_size = int(self.__video_byterate * 0.05)
+        return window_size - (window_size % session_settings.cluster_size)
 
     def update_window_size(self, byte_count: int):
         losses_ocurred = byte_count / self.__current_window_size != 1
