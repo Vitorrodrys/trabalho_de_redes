@@ -137,7 +137,7 @@ class WindowHandler:
         return window_size - (window_size % session_settings.cluster_size)
 
     def update_window_size(self, byte_count: int):
-        losses_ocurred = byte_count / self.__current_window_size != 1
+        losses_ocurred = byte_count < self.__current_window_size
         self.__state_transitions_map[self.__current_state](losses_ocurred)
         self.__states_actions_map[self.__current_state]()
         logging.info("update window size to %d", self.__current_window_size)
