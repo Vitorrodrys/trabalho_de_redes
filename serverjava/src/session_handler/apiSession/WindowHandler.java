@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
-
 import session_handler.core.Settings;
 
 public class WindowHandler {
@@ -28,13 +27,17 @@ public class WindowHandler {
     private final StateTransition[] stateTransitions;
 
     public WindowHandler(String videoPath) throws IOException {
+        // Initialize clusterSize
         this.clusterSize = Settings.SessionSettings.getClusterSize();
+
+        // Initialize other parameters
         this.videoByterate = getVideoByterate(videoPath);
         this.currentWindowSize = (int) (videoByterate * 0.05);
         this.currentWindowSize -= (this.currentWindowSize % clusterSize);
         this.threshold = videoByterate;
         this.currentState = State.STATE_ZERO.ordinal();
 
+        // Initialize state actions and transitions
         stateActions = new StateAction[]{
             this::duplicateWindowSize,
             this::startsToBegging,
