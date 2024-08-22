@@ -15,7 +15,7 @@ class LogLevelsEnum(StrEnum):
 
 
 class EnvironmentSettings(BaseSettings):
-    log_level: str = os.getenv("LOG_LEVEL", default="INFO")
+    log_level: str = os.getenv("LOG_LEVEL", default="DEBUG")
     server_ip: str = os.getenv("SERVER_IP")
     server_port: int = os.getenv("SERVER_PORT")
 

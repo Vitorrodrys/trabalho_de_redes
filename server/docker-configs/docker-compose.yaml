@@ -7,6 +7,6 @@ services:
       - SERVER_IP=0.0.0.0
       - SERVER_PORT=50000
       - NETWORK_MTU=1500
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
     ports:
       - "50000:50000"
