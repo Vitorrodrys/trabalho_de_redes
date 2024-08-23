@@ -30,6 +30,7 @@ class TCPChannel(BaseChannel):
         cls, video_path: str, udp_port: int
     ) -> tuple["TCPChannel", int]:
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         tcp_sock.connect(
             (enviroment_settings.server_ip, enviroment_settings.server_port)
         )
