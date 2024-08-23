@@ -51,6 +51,17 @@ class WindowHandler:
     def __keep_current_window_size(self):
         logging.info("keeping the current window size")
 
+    def __recover_from_loss(self):
+        """
+        This state splits the current window size by half and sets the threshold as an average between
+        the new window size and the old window size. In other words, assuming that the old window size
+        before the loss was 100 bytes, it sets the threshold as 75, and the new current window size as 50.
+        """
+        new_window_size = self.__current_window_size / 2
+        self.__threshould = new_window_size + (self.__current_window_size - new_window_size) / 2
+        new_window_size -= new_window_size % session_settings.cluster_size
+        self.__current_window_size = new_window_size
+
     # conditional transitions
     def __check_loss_percentage(self, loss_percentage: float):
         return loss_percentage-session_settings.at_most_loss_percentage >= 1e-5
@@ -93,12 +104,13 @@ class WindowHandler:
         if not self.__check_loss_percentage(loss_percentage):
             self.__current_state = 4
             return
-        self.__current_state = 0
-        self.__threshould = self.__video_byterate
-        self.__current_window_size = int(self.__video_byterate * 0.05)
-        self.__current_window_size -= (
-            self.__current_window_size % session_settings.cluster_size
-        )
+        self.__current_state = 5
+
+    def __state_five_transitions(self, loss_percentage:float)
+        if self.__check_loss_percentage(loss_percentage):
+            self.__current_state = 5
+            return
+        self.__current_state = 3
 
     def __init__(self, video_path: str) -> None:
         # Ensure the window size is a multiple of the OS cluster size
@@ -117,6 +129,7 @@ class WindowHandler:
             self.__duplicate_until_threshould,
             self.__increment_slowly,
             self.__keep_current_window_size,
+            self.__recover_from_loss
         ]
         self.__state_transitions_map = [
             self.__state_zero_transitions,
@@ -124,6 +137,7 @@ class WindowHandler:
             self.__state_two_transitions,
             self.__state_three_transitions,
             self.__state_four_transitions,
+            self.__state_five_transitions
         ]
 
     def update_window_size(self, byte_count: int):
