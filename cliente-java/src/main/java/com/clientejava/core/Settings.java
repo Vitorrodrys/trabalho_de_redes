@@ -3,15 +3,14 @@ package com.clientejava.core;
 import java.util.Optional;
 
 public class Settings {
+
     public static class SettingsEnvironment {
         private String serverIp;
         private int serverPort;
 
         public SettingsEnvironment() {
-            this.serverPort = 50000;
-            this.serverIp = "127.0.0.1";
-            //this.serverIp = System.getenv("SERVER_IP");
-            //this.serverPort = Integer.parseInt(Optional.ofNullable(System.getenv("SERVER_PORT")).orElse("0"));
+            this.serverIp = Optional.ofNullable(System.getenv("SERVER_IP")).orElse("127.0.0.1");
+            this.serverPort = Integer.parseInt(Optional.ofNullable(System.getenv("SERVER_PORT")).orElse("50000"));
         }
 
         public String getServerIp() {

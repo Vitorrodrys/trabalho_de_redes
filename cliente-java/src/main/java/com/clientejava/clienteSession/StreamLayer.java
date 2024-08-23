@@ -6,6 +6,7 @@ import com.clientejava.clienteSession.clientApi.StreamAPI;
 import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StreamLayer {
     private final StreamAPI streamApi;
@@ -13,14 +14,14 @@ public class StreamLayer {
     private final Thread workerThread;
     private final Lock lock;
     private final Lock pause;
-    private volatile boolean killEvent;
+    private final AtomicBoolean killEvent;
 
     public StreamLayer(StreamAPI streamApi, UDPChannel udpChannel) {
         this.streamApi = streamApi;
         this.udpChannel = udpChannel;
         this.lock = new ReentrantLock();
         this.pause = new ReentrantLock();
-        this.killEvent = false;
+        this.killEvent = new AtomicBoolean(false);
         this.pause.lock(); // Starts paused
         this.workerThread = new Thread(this::workerMethod);
         this.workerThread.start();
@@ -28,15 +29,18 @@ public class StreamLayer {
 
     private void workerMethod() {
         try (OutputStream mpvPipe = createMpvPipe()) {
-            while (!killEvent) {
+            while (!killEvent.get()) {
                 lock.lock();
                 try {
                     pause.lock();
-                    pause.unlock();
-                    streamApi.requestAVideoPackage();
-                    byte[] videoPackage = udpChannel.receiveFrame();
-                    streamApi.sendFeedback(videoPackage.length);
-                    mpvPipe.write(videoPackage);
+                    try {
+                        streamApi.requestAVideoPackage();
+                        byte[] videoPackage = udpChannel.receiveFrame();
+                        streamApi.sendFeedback(videoPackage.length);
+                        mpvPipe.write(videoPackage);
+                    } finally {
+                        pause.unlock();
+                    }
                 } finally {
                     lock.unlock();
                 }
@@ -73,7 +77,7 @@ public class StreamLayer {
     }
 
     public void stop() {
-        killEvent = true;
+        killEvent.set(true);
         try {
             workerThread.join();
             udpChannel.close();

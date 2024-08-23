@@ -2,23 +2,25 @@ package com.clientejava.clienteSession;
 
 import com.clientejava.Channel.TCPChannel;
 import com.clientejava.Channel.UDPChannel;
-
 import com.clientejava.clienteSession.clientApi.StreamAPI;
 import com.clientejava.clienteSession.clientApi.UserAPI;
 
 public class ClientSession {
 
     public static SessionData startsANewSession(String wishedVideo) throws Exception {
-        UDPChannel udpChannel = new UDPChannel();
-        TCPChannel tcpChannel = TCPChannel.createTcpChannel(wishedVideo, udpChannel.getListeningUdpPort());
+    UDPChannel udpChannel = new UDPChannel();
+    TCPChannel tcpChannel = TCPChannel.createTcpChannel(wishedVideo, udpChannel.getListeningUdpPort());
 
-        UserAPI userApi = new UserAPI(tcpChannel);
-        StreamAPI streamApi = new StreamAPI(tcpChannel);
-        StreamLayer streamLayer = new StreamLayer(streamApi, udpChannel);
-        int videoSize = Integer.parseInt(tcpChannel.readData());
+    UserAPI userApi = new UserAPI(tcpChannel);
+    StreamAPI streamApi = new StreamAPI(tcpChannel);
+    StreamLayer streamLayer = new StreamLayer(streamApi, udpChannel);
 
-        return new SessionData(userApi, streamLayer, videoSize);
-    }
+    // Verifique a resposta recebida
+    String videoSizeString = tcpChannel.readDatas();
+    int videoSize = Integer.parseInt(videoSizeString);
+
+    return new SessionData(userApi, streamLayer, videoSize);
+}
 
     public static class SessionData {
         public final UserAPI userApi;

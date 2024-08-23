@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.clientejava.core.Settings.SettingsEnvironment;
@@ -17,7 +16,7 @@ import com.clientejava.core.Settings.SessionSettings;
 public class Channel {
     private static final Logger logger = Logger.getLogger(Channel.class.getName());
 
-    private static final String EOF = "#END#";
+    private static final byte[] EOF = "#END#".getBytes();
 
     private static final SettingsEnvironment envSettings = new SettingsEnvironment();
     private static final SessionSettings sessionSettings = new SessionSettings();
@@ -54,26 +53,37 @@ public class Channel {
             return tcpChannel;
         }
 
-        public String readData() throws IOException {
+        public String readDatas() throws IOException {
             byte[] buffer = new byte[1024];
             int bytesRead = socket.getInputStream().read(buffer);
             return new String(buffer, 0, bytesRead, "UTF-8");
         }
 
         private void writeData(String data) throws IOException {
-            if (data.contains(EOF)) {
+            byte[] dataBytes = data.getBytes("UTF-8");
+            if (new String(dataBytes).contains(new String(EOF))) {
                 throw new IllegalArgumentException("data contains EOF");
             }
-            String finalData = data + " " + EOF + " ";
-            socket.getOutputStream().write(finalData.getBytes("UTF-8"));
+            byte[] finalData = ByteBuffer.allocate(dataBytes.length + EOF.length + 2)
+                                         .put(dataBytes)
+                                         .put(" ".getBytes("UTF-8"))
+                                         .put(EOF)
+                                         .put(" ".getBytes("UTF-8"))
+                                         .array();
+            socket.getOutputStream().write(finalData);
         }
 
         public void writeCommand(Object... args) throws IOException {
-            StringBuilder data = new StringBuilder(args[0].toString());
-            for (int i = 1; i < args.length; i++) {
-                data.append(" ").append(args[i].toString());
+            String data = String.join(" ", argsToStringArray(args));
+            writeData(data);
+        }
+
+        private String[] argsToStringArray(Object... args) {
+            String[] strArgs = new String[args.length];
+            for (int i = 0; i < args.length; i++) {
+                strArgs[i] = args[i].toString();
             }
-            writeData(data.toString());
+            return strArgs;
         }
     }
 
