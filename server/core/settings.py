@@ -27,6 +27,7 @@ class SessionSettings(BaseSettings):
     cluster_size: int = os.getenv("CLUSTER_SIZE", default=str(4096))
     max_requests: int = os.getenv("MAX_REQUESTS", default="10")
     network_mtu: int = os.getenv("NETWORK_MTU")
+    at_most_loss_percentage: float = os.getenv("AT_MOST_LOSS_PERCENTAGE", default="0.8")
 
 
 server_settings = ServerSettings()
