@@ -52,17 +52,24 @@ class WindowHandler:
         logging.info("keeping the current window size")
 
     # conditional transitions
-    def __state_zero_transitions(self, losses_ocurred: bool):
+    def __check_loss_percentage(self, loss_percentage: float):
+        return loss_percentage-session_settings.at_most_loss_percentage >= 1e-5
+
+    def __state_zero_transitions(self, loss_percentage: float):
+
+        if self.__check_loss_percentage(loss_percentage):
+            self.__current_state = 1
+            return
         if self.__current_window_size * 2 >= self.__threshould:
             self.__current_state = 3
             return
-        self.__current_state = 1 if losses_ocurred else 0
+        self.__current_state = 0
 
-    def __state_one_transitions(self, losses_ocurred: bool):
-        self.__current_state = 1 if losses_ocurred else 2
+    def __state_one_transitions(self, loss_percentage: float):
+        self.__current_state = 1 if self.__check_loss_percentage(loss_percentage) else 2
 
-    def __state_two_transitions(self, losses_ocurred: bool):
-        if losses_ocurred:
+    def __state_two_transitions(self, loss_percentage: float):
+        if self.__check_loss_percentage(loss_percentage):
             self.__current_state = 1
             return
         if self.__current_window_size * 2 >= self.__threshould:
@@ -70,8 +77,8 @@ class WindowHandler:
             return
         self.__current_state = 2
 
-    def __state_three_transitions(self, losses_ocurred: bool):
-        if losses_ocurred:
+    def __state_three_transitions(self, loss_percentage: float):
+        if self.__check_loss_percentage(loss_percentage):
             self.__current_state = 1
             return
         if (
@@ -82,8 +89,8 @@ class WindowHandler:
             return
         self.__current_state = 3
 
-    def __state_four_transitions(self, losses_ocurred: bool):
-        if not losses_ocurred:
+    def __state_four_transitions(self, loss_percentage: float):
+        if not self.__check_loss_percentage(loss_percentage):
             self.__current_state = 4
             return
         self.__current_state = 0
@@ -120,8 +127,8 @@ class WindowHandler:
         ]
 
     def update_window_size(self, byte_count: int):
-        losses_ocurred = byte_count / self.__current_window_size != 1
-        self.__state_transitions_map[self.__current_state](losses_ocurred)
+        loss_percentage = 1.0 - byte_count / self.__current_window_size
+        self.__state_transitions_map[self.__current_state](loss_percentage)
         self.__states_actions_map[self.__current_state]()
         logging.info("update window size to %d", self.__current_window_size)
         logging.info("current state: %d", self.__current_state)
