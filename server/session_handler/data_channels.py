@@ -34,6 +34,7 @@ class TCPChannel(BaseChannel):
         max_connections: typing.Optional[int] = server_settings.max_connections,
     ) -> socket.socket:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         server_socket.bind((ip_listen, port))
         server_socket.listen(max_connections)
         return server_socket
