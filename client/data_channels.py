@@ -2,7 +2,7 @@ import logging
 from functools import reduce
 import socket
 import struct
-import time
+import datetime
 
 from core import enviroment_settings, session_settings
 
@@ -33,7 +33,7 @@ class TCPChannel(BaseChannel):
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         
-        start_time = time.time()
+        start_time = datetime.datetime.now()
         
         tcp_sock.connect(
             (enviroment_settings.server_ip, enviroment_settings.server_port)
@@ -41,9 +41,9 @@ class TCPChannel(BaseChannel):
         
         tcp_channel = cls(tcp_sock)
         tcp_channel.__write_data(f"{udp_port} {video_path}")
-        end_time = time.time()
+        end_time = datetime.datetime.now()
         connection_time = end_time - start_time
-        return tcp_channel, int(tcp_channel.read_datas()), connection_time
+        return tcp_channel, int(tcp_channel.read_datas()), connection_time.total_seconds()
 
     def read_datas(self) -> str:
         return self._sock.recv(1024).decode("utf-8")
