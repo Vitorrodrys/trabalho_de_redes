@@ -61,10 +61,9 @@ class TCPChannel(BaseChannel):
 
 
 class UDPChannel(BaseChannel):
-    def __init__(self, timeout: float) -> None:
+    def __init__(self) -> None:
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.bind(("0.0.0.0", 0))
-        udp_sock.settimeout(timeout)  # Define o timeout com o valor passado
         super().__init__(udp_sock)
 
     def get_listening_udp_port(self) -> int:
