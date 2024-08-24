@@ -54,6 +54,7 @@ class APISession:
         command_func(self, *args)
 
     def wait_comands(self):
+        self.__tcp_channel.write_data("ok")
         while True:
             try:
                 commands = self.__tcp_channel.read_datas()

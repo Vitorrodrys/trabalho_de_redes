@@ -4,8 +4,16 @@ from threading import Thread
 
 from core import server_settings
 
+from .api_session import APISession, StreamLayer
 from .data_channels import TCPChannel, UDPChannel
-from .api_session import starts_session
+
+
+def starts_session(tcp_channel: TCPChannel, udp_channel: UDPChannel, video_path: str):
+    stream_layer = StreamLayer(udp_channel, video_path)
+    api_session = APISession(video_path, tcp_channel, stream_layer)
+    tcp_channel.write_data(str(os.path.getsize(video_path)))
+    api_session.wait_comands()
+    return
 
 
 def create_session(tcp_channel: TCPChannel, client_address: str):
@@ -22,7 +30,6 @@ def create_session(tcp_channel: TCPChannel, client_address: str):
         tcp_channel.write_data("error NotFound")
         return
     udp_channel = UDPChannel(client_address, int(udp_port))
-    tcp_channel.write_data(str(os.path.getsize(video_path)))
     starts_session(tcp_channel, udp_channel, video_path)
     logging.info("Session with client %s was closed", client_address)
 
