@@ -26,6 +26,10 @@ class WindowHandler:
         logging.info("Byte rate calculated successfully: %f bytes per second", byterate)
         return byterate
 
+    def __get_max_video_byterate(self, video_path: str) -> float:
+        video_byterate = self.__get_video_byterate(video_path)
+        return video_byterate * 1.5
+
     # State actions
     def __duplicate_window_size(self):
         self.__current_window_size *= 2
@@ -53,13 +57,10 @@ class WindowHandler:
 
     def __recover_from_loss(self):
         """
-        This state splits the current window size by half and sets the threshold as an average between
-        the new window size and the old window size. In other words, assuming that the old window size
-        before the loss was 100 bytes, it sets the threshold as 75, and the new current window size as 50.
+        This state try recovery from a package loss backing slowly the window size
         """
-        new_window_size = self.__current_window_size / 2
-        self.__threshould = new_window_size + (self.__current_window_size - new_window_size) / 2
-        new_window_size -= new_window_size % session_settings.cluster_size
+        new_window_size = self.__current_window_size - session_settings.cluster_size*2
+        self.__threshould = new_window_size + session_settings.cluster_size
         self.__current_window_size = new_window_size
 
     # conditional transitions
@@ -115,9 +116,9 @@ class WindowHandler:
     def __init__(self, video_path: str) -> None:
         # Ensure the window size is a multiple of the OS cluster size
         # to avoid reading unnecessary disk blocks and maximize data usage efficiency.
-        video_byterate = self.__get_video_byterate(video_path)
+        video_byterate = self.__get_max_video_byterate(video_path)
         self.__video_byterate = video_byterate
-        self.__current_window_size = int(video_byterate * 0.05)
+        self.__current_window_size = int(video_byterate * 0.2)
         self.__current_window_size -= (
             self.__current_window_size % session_settings.cluster_size
         )
