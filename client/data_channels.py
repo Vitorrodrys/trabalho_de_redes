@@ -2,6 +2,7 @@ import logging
 from functools import reduce
 import socket
 import struct
+import time
 
 from core import enviroment_settings, session_settings
 
@@ -28,14 +29,21 @@ class TCPChannel(BaseChannel):
     @classmethod
     def create_tcp_channel(
         cls, video_path: str, udp_port: int
-    ) -> tuple["TCPChannel", int]:
+    ) -> tuple["TCPChannel", int, float]:
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        
+        start_time = time.time()
+        
         tcp_sock.connect(
             (enviroment_settings.server_ip, enviroment_settings.server_port)
         )
+        
         tcp_channel = cls(tcp_sock)
         tcp_channel.__write_data(f"{udp_port} {video_path}")
-        return tcp_channel, int(tcp_channel.read_datas())
+        end_time = time.time()
+        connection_time = end_time - start_time
+        return tcp_channel, int(tcp_channel.read_datas()), connection_time
 
     def read_datas(self) -> str:
         return self._sock.recv(1024).decode("utf-8")
@@ -53,10 +61,10 @@ class TCPChannel(BaseChannel):
 
 
 class UDPChannel(BaseChannel):
-    def __init__(self) -> None:
+    def __init__(self, timeout: float) -> None:
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.bind(("0.0.0.0", 0))
-        udp_sock.settimeout(session_settings.udp_channel_timeout)
+        udp_sock.settimeout(timeout)  # Define o timeout com o valor passado
         super().__init__(udp_sock)
 
     def get_listening_udp_port(self) -> int:
@@ -76,7 +84,7 @@ class UDPChannel(BaseChannel):
                     break
                 frame.append((offset, data))
             except socket.timeout:
-                logging.debug("a timeout ocurred while wait receive a strem package")
+                logging.debug("a timeout occurred while waiting to receive a stream package")
                 break
         frame.sort(key=lambda x: x[0])
         return reduce(lambda x, y: x + y[1], frame, b"")
