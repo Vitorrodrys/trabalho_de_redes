@@ -11,7 +11,7 @@ def starts_a_new_session(wished_video: str) -> tuple[UserAPI, StreamLayer, int]:
     )
 
     udp_channel._sock.settimeout(connection_timeout*60)
-    print(connection_timeout)
+    print(connection_timeout*60)
 
     user_api = UserAPI(tcp_channel=tcp_channel)
     stream_api = StreamAPI(tcp_channel=tcp_channel)
