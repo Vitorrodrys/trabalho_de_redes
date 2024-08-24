@@ -24,6 +24,7 @@ class APISession:
     def request_a_video_package(self):
         package_size = self.__window_handler.get_window_size()
         self.__stream_layer.add_request(RequestFrame(package_size))
+        self.__tcp_channel.write_data("ok")
 
     @commands_registry.add("feedback")
     def receive_client_feedback(self, byte_count: int):
