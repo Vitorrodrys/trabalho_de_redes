@@ -106,7 +106,7 @@ class WindowHandler:
             return
         self.__current_state = 5
 
-    def __state_five_transitions(self, loss_percentage:float)
+    def __state_five_transitions(self, loss_percentage:float):
         if self.__check_loss_percentage(loss_percentage):
             self.__current_state = 5
             return
