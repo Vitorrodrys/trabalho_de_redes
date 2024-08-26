@@ -59,6 +59,25 @@ class StreamLayer(__WorkerStreamLayer):
         with self._lock:
             self._video_file.seek(offset)
             return True
+    
+    def seek_forward_offset(self):
+        current_offset = self._video_file.tell()
+        new_offset = current_offset + int(self._file_size * 0.01)
+        
+        if new_offset >= self._file_size:
+            print("Error: Cannot seek beyond the end of the video.")
+            return False
+        
+        return self.update_offset(new_offset)
+
+    def seek_backward_offset(self):
+        current_offset = self._video_file.tell()
+        new_offset = max(0, current_offset - int(self._file_size * 0.01))
+        
+        if new_offset < 0:
+            new_offset = 0  # start video from the beginning if offset is less than 0
+
+        return self.update_offset(new_offset)
 
     def pause(self):
         if self._pause_lock.locked():

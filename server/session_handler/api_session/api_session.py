@@ -46,6 +46,20 @@ class APISession:
     def pause(self):
         self.__stream_layer.pause()
 
+    @commands_registry.add("seek_forward")
+    def seek_forward(self):
+        if not self.__stream_layer.seek_forward_offset():
+            self.__tcp_channel.write_data("invalid seek position")
+        else:
+            self.__tcp_channel.write_data("ok")
+
+    @commands_registry.add("seek_backward")
+    def seek_backward(self):
+        if not self.__stream_layer.seek_backward_offset():
+            self.__tcp_channel.write_data("invalid seek position")
+        else:
+            self.__tcp_channel.write_data("ok")
+
     def __run_command(self, command: tuple[str]):
         command_name, *args = command
         command_func = commands_registry.get_command(command_name)
