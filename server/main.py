@@ -1,5 +1,17 @@
-from core import init_logging
-from listen_connections import listen_new_connections
+import logging
+
+from core import init_logging, session_settings
+from session_handler.listen_connections import listen_connections
 
 init_logging()
-listen_new_connections()
+
+logging.info(
+    "at most package loss percentage was set as %f", session_settings.at_most_loss_percentage
+)
+
+def main():
+    listen_connections()
+
+
+if __name__ == "__main__":
+    main()

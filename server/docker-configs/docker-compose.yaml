@@ -6,7 +6,10 @@ services:
     environment:
       - SERVER_IP=0.0.0.0
       - SERVER_PORT=50000
-      - MAX_CONNECTIONS=10
+      - NETWORK_MTU=1500
       - LOG_LEVEL=DEBUG
+      - AT_MOST_LOSS_PERCENTAGE=0.1
+    volumes:
+      - ./videos_volume:/opt/stream-server/videos_volume
     ports:
       - "50000:50000"
