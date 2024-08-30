@@ -36,7 +36,7 @@ class WindowHandler:
 
     def __starts_to_begging(self):
         self.__threshould = self.__current_window_size / 2
-        self.__current_window_size = int(self.__video_byterate * 0.05)
+        self.__current_window_size = int(self.__video_byterate * 0.2)
         self.__current_window_size -= (
             self.__current_window_size % session_settings.cluster_size
         )
