@@ -3,8 +3,11 @@
 
 Este trabalho visou a transmissão de vídeos utilizando sockets UDP, fazendo o controle de bufferização.
 
+## Requisitos
 
-
+#### -Python 3.11
+#### -Docker
+#### -Docker Compose 2.29
 
 ## Funcionalidades
 
