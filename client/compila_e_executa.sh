@@ -11,4 +11,4 @@ read SERVER_ADDRESS
 echo "type the server port:"
 read PORT
 
-SERVER_IP=$SERVER_ADDRESS SERVER_PORT=$PORT python3 main.py
+SERVER_IP=$SERVER_ADDRESS SERVER_PORT=$PORT LOG_LEVEL=CRITICAL python3 main.py
