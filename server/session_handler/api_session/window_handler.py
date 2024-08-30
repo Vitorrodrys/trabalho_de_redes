@@ -60,6 +60,9 @@ class WindowHandler:
         This state try recovery from a package loss backing slowly the window size
         """
         new_window_size = self.__current_window_size - session_settings.cluster_size*2
+        if new_window_size < int(self.__video_byterate * 0.2):
+            logging.info("window already reached to inferior threshould, nothing to do")
+            return
         self.__threshould = new_window_size + session_settings.cluster_size
         self.__current_window_size = new_window_size
 
@@ -142,6 +145,7 @@ class WindowHandler:
         ]
 
     def update_window_size(self, byte_count: int):
+        logging.info("throughput: %d, bytes losed: %d", byte_count, self.__current_window_size-byte_count)
         loss_percentage = 1.0 - byte_count / self.__current_window_size
         self.__state_transitions_map[self.__current_state](loss_percentage)
         self.__states_actions_map[self.__current_state]()
