@@ -44,7 +44,7 @@ Vá para a pasta raiz
 
 ```bash
   cd client
-  ./client.sh
+  ./compila_e_executa.sh
 ```
 
 ### Peça o vídeo que deseja receber do servidor
